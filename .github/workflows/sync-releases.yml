@@ -25,7 +25,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           UPSTREAM_RELEASE=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/repos/ironsource-mobile/iOS-sdk/releases/latest)
-          UPSTREAM_VERSION=$(echo "$UPSTREAM_RELEASE" | jq -r '.tag_name')
+          UPSTREAM_VERSION=$(echo "$UPSTREAM_RELEASE" | jq -r '.tag_name' | sed 's/^IronSource_//')
           UPSTREAM_ASSET_URL=$(echo "$UPSTREAM_RELEASE" | jq -r '.assets[] | select(.name | startswith("IronSource")) | .browser_download_url')
 
           echo "version=$UPSTREAM_VERSION" >> $GITHUB_OUTPUT
