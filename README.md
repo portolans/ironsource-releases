@@ -1,3 +1,3 @@
-# IronSource Releases
+# IronSourceSDK Releases
 
-This is an internal mirror of IronSource's [IronSourceAdQualitySDK](https://github.com/ironsource-mobile/iOS-adqualitysdk) releases reformatted to work with SPM. This repository contains zero source modifications of IronSource. IronSource's [LICENSE](https://github.com/ironsource-mobile/iOS-adqualitysdk/blob/main/LICENSE) applies.
+This is a mirror of IronSource's [iOS SDK](https://github.com/ironsource-mobile/iOS-sdk) releases reformatted to work with SPM. IronSource's [LICENSE](https://github.com/ironsource-mobile/iOS-sdk/blob/master/LICENSE) applies.

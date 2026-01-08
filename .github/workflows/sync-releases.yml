@@ -1,4 +1,4 @@
-name: Sync AdQuality SDK Releases
+name: Sync IronSource SDK Releases
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
 jobs:
   sync:
     name: Sync Latest Release
-    runs-on: apple
+    runs-on: macOS-latest
     permissions:
       contents: write
     timeout-minutes: 10
@@ -17,14 +17,16 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          token: ${{ secrets.PUSHBOT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get latest upstream release
         id: upstream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          UPSTREAM_RELEASE=$(curl -s https://api.github.com/repos/ironsource-mobile/iOS-adqualitysdk/releases/latest)
+          UPSTREAM_RELEASE=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/repos/ironsource-mobile/iOS-sdk/releases/latest)
           UPSTREAM_VERSION=$(echo "$UPSTREAM_RELEASE" | jq -r '.tag_name')
-          UPSTREAM_ASSET_URL=$(echo "$UPSTREAM_RELEASE" | jq -r '.assets[] | select(.name | startswith("IronSourceAdQualitySDK-ios-v")) | .browser_download_url')
+          UPSTREAM_ASSET_URL=$(echo "$UPSTREAM_RELEASE" | jq -r '.assets[] | select(.name | startswith("IronSource")) | .browser_download_url')
 
           echo "version=$UPSTREAM_VERSION" >> $GITHUB_OUTPUT
           echo "asset_url=$UPSTREAM_ASSET_URL" >> $GITHUB_OUTPUT
@@ -64,13 +66,13 @@ jobs:
           echo "Found xcframework at: $XCFRAMEWORK_PATH"
 
           # Copy xcframework to working directory
-          cp -R "$XCFRAMEWORK_PATH" ./IronSourceAdQualitySDK.xcframework
+          cp -R "$XCFRAMEWORK_PATH" ./IronSource.xcframework
 
           # Create zip for release
-          zip -r IronSourceAdQualitySDK.xcframework.zip IronSourceAdQualitySDK.xcframework
+          zip -r IronSource.xcframework.zip IronSource.xcframework
 
           # Calculate checksum
-          CHECKSUM=$(xcrun swift package compute-checksum IronSourceAdQualitySDK.xcframework.zip)
+          CHECKSUM=$(xcrun swift package compute-checksum IronSource.xcframework.zip)
           echo "CHECKSUM=$CHECKSUM" >> $GITHUB_ENV
           echo "Checksum: $CHECKSUM"
 
@@ -82,27 +84,27 @@ jobs:
           REPO="${{ github.repository }}"
 
           cat > Package.swift << EOF
-          // swift-tools-version:5.3
+          // swift-tools-version:6.2
           import PackageDescription
 
           let package = Package(
-              name: "IronSourceAdQualitySDK",
+              name: "IronSource",
               platforms: [
-                  .iOS(.v12)
+                  .iOS(.v12),
               ],
               products: [
                   .library(
-                      name: "IronSourceAdQualitySDK",
-                      targets: ["IronSourceAdQualitySDK"]
-                  )
+                      name: "IronSource",
+                      targets: ["IronSource"],
+                  ),
               ],
               targets: [
                   .binaryTarget(
-                      name: "IronSourceAdQualitySDK",
-                      url: "https://github.com/${REPO}/releases/download/${VERSION}/IronSourceAdQualitySDK.xcframework.zip",
-                      checksum: "${CHECKSUM}"
-                  )
-              ]
+                      name: "IronSource",
+                      url: "https://github.com/${REPO}/releases/download/${VERSION}/IronSource.xcframework.zip",
+                      checksum: "${CHECKSUM}",
+                  ),
+              ],
           )
           EOF
 
@@ -129,9 +131,9 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: IronSourceAdQualitySDK.xcframework.zip
+          file: IronSource.xcframework.zip
           tag: ${{ steps.upstream.outputs.version }}
-          asset_name: IronSourceAdQualitySDK.xcframework.zip
+          asset_name: IronSource.xcframework.zip
           overwrite: false
 
       - name: Update release notes
@@ -142,13 +144,13 @@ jobs:
           VERSION="${{ steps.upstream.outputs.version }}"
 
           cat <<EOF > release_notes.txt
-          Synced from [ironsource-mobile/iOS-adqualitysdk $VERSION](https://github.com/ironsource-mobile/iOS-adqualitysdk/releases/tag/$VERSION)
+          Synced from [ironsource-mobile/iOS-sdk $VERSION](https://github.com/ironsource-mobile/iOS-sdk/releases/tag/IronSource_$VERSION)
 
           Include this framework in your Package.swift file by adding the following to your \`targets\` array:
           \`\`\`swift
           .binaryTarget(
-              name: "IronSourceAdQualitySDK",
-              url: "https://github.com/${{ github.repository }}/releases/download/$VERSION/IronSourceAdQualitySDK.xcframework.zip",
+              name: "IronSource",
+              url: "https://github.com/${{ github.repository }}/releases/download/$VERSION/IronSource.xcframework.zip",
               checksum: "${{ env.CHECKSUM }}"
           )
           \`\`\`
