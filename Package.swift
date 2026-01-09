@@ -11,12 +11,18 @@ let package = Package(
             name: "IronSource",
             targets: ["IronSource"],
         ),
+        .library(name: "TestConsumer", targets: ["TestConsumer"]),
     ],
     targets: [
         .binaryTarget(
             name: "IronSource",
             url: "https://github.com/portolans/ironsource-releases/releases/download/9.2.0/IronSource.xcframework.zip",
             checksum: "f16c8fe00f270381ca67f0151e1ea0f28532fc10c0a5fb4b5e2639e56a063133",
+        ),
+        .target(
+            name: "TestConsumer",
+            dependencies: ["IronSource"],
+            swiftSettings: [.swiftLanguageMode(.v6)],
         ),
     ],
 )
