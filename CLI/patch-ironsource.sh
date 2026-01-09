@@ -55,7 +55,7 @@ find "$XCFRAMEWORK_PATH" -name "IronSource.h" -path "*/Headers/*" | while read -
     if [ -n "$IMPORT_BLOCK" ]; then
         # Insert imports before the final #endif
         # Using perl for cross-platform compatibility
-        perl -i -pe "s/^#endif\s*$/$(echo -e "$IMPORT_BLOCK")#endif/" "$HEADER_FILE"
+        perl -i -pe "s/^#endif\s*$/$(echo -e "$IMPORT_BLOCK")\n\n#endif/" "$HEADER_FILE"
         echo "  Done"
     fi
 done
