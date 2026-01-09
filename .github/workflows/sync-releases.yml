@@ -65,11 +65,11 @@ jobs:
           XCFRAMEWORK_PATH=$(find upstream_extracted -name "*.xcframework" -type d | head -1)
           echo "Found xcframework at: $XCFRAMEWORK_PATH"
 
-          # Apply patches to make IronSource compatible with Swift.
-          ./CLI/patch-ironsource.sh
-
           # Copy xcframework to working directory
           cp -R "$XCFRAMEWORK_PATH" ./IronSource.xcframework
+
+          # Apply patches to make IronSource compatible with Swift.
+          ./CLI/patch-ironsource.sh IronSource.xcframework
 
           # Create zip for release
           zip -r IronSource.xcframework.zip IronSource.xcframework
