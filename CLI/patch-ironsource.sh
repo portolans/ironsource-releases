@@ -60,5 +60,24 @@ find "$XCFRAMEWORK_PATH" -name "IronSource.h" -path "*/Headers/*" | while read -
     fi
 done
 
+# Patch ISAdapterConfig.h to add nullability annotations
+find "$XCFRAMEWORK_PATH" -name "ISAdapterConfig.h" -path "*/Headers/*" | while read -r CONFIG_FILE; do
+    echo "Patching: $CONFIG_FILE"
+
+    # Check if already patched
+    if grep -q "NS_ASSUME_NONNULL_BEGIN" "$CONFIG_FILE" 2>/dev/null; then
+        echo "  Already patched, skipping"
+        continue
+    fi
+
+    # Add NS_ASSUME_NONNULL_BEGIN before @interface ISAdapterConfig : NSObject
+    perl -i -pe 's/^(\@interface ISAdapterConfig : NSObject)/NS_ASSUME_NONNULL_BEGIN\n\n$1/' "$CONFIG_FILE"
+
+    # Add NS_ASSUME_NONNULL_END after @end
+    perl -i -pe 's/^(\@end)\s*$/$1\n\nNS_ASSUME_NONNULL_END/' "$CONFIG_FILE"
+
+    echo "  Done"
+done
+
 echo ""
 echo "Patching complete!"
