@@ -54,7 +54,7 @@ jobs:
             echo "Already up to date: ${{ steps.upstream.outputs.version }}"
           fi
 
-      - name: Download and extract upstream release
+      - name: Download, extract, and patch upstream release
         if: steps.check.outputs.needs_update == 'true'
         run: |
           echo "Downloading from: ${{ steps.upstream.outputs.asset_url }}"
@@ -64,6 +64,9 @@ jobs:
           # Find the xcframework
           XCFRAMEWORK_PATH=$(find upstream_extracted -name "*.xcframework" -type d | head -1)
           echo "Found xcframework at: $XCFRAMEWORK_PATH"
+
+          # Apply patches to make IronSource compatible with Swift.
+          ./CLI/patch-ironsource.sh
 
           # Copy xcframework to working directory
           cp -R "$XCFRAMEWORK_PATH" ./IronSource.xcframework
