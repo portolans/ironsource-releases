@@ -85,7 +85,7 @@ jobs:
           mkdir -p Sources/Resources
           PRIVACY_INFO=$(find IronSource.xcframework -name "PrivacyInfo.xcprivacy" | head -1)
           echo "Found PrivacyInfo at: $PRIVACY_INFO"
-          cp "$PRIVACY_INFO" Sources/Resources/PrivacyInfo.xcprivacy
+          cp "$PRIVACY_INFO" Sources/IronSource/Resources/PrivacyInfo.xcprivacy
 
       - name: Update Package.swift
         if: steps.check.outputs.needs_update == 'true'
@@ -134,7 +134,7 @@ jobs:
         run: |
           git config user.name 'Portolabot'
           git config user.email portolabot@hiportola.com
-          git add Package.swift Sources/Resources/PrivacyInfo.xcprivacy
+          git add Package.swift Sources/IronSource/Resources/PrivacyInfo.xcprivacy
           git commit -m "Update to ${{ steps.upstream.outputs.version }}" || echo "No changes to commit"
           git push
 
