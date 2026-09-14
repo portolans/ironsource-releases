@@ -115,7 +115,7 @@ jobs:
                       dependencies: ["IronSourceBinary"],
                       resources: [.copy("Resources/PrivacyInfo.xcprivacy")],
                       linkerSettings: [
-                          .unsafeFlags(["-ObjC"]), // Required to support IronSource's use of Objective-C extensions on common types.
+                          .unsafeFlags(["-Xlinker", "-ObjC"]), // Required to support IronSource's use of Objective-C extensions on common types.
                       ],
                   ),
                   .binaryTarget(
