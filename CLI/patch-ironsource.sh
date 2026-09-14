@@ -60,23 +60,36 @@ find "$XCFRAMEWORK_PATH" -name "IronSource.h" -path "*/Headers/*" | while read -
     fi
 done
 
-# Patch ISAdapterConfig.h to add nullability annotations
-find "$XCFRAMEWORK_PATH" -name "ISAdapterConfig.h" -path "*/Headers/*" | while read -r CONFIG_FILE; do
-    echo "Patching: $CONFIG_FILE"
+# Some headers annotate a few pointers with `nullable` but leave the rest bare,
+# which trips -Wnullability-completeness in any consumer building with warnings
+# as errors. Wrapping each interface in NS_ASSUME_NONNULL_BEGIN/END supplies the
+# missing half without changing any annotation the vendor did write.
+NULLABILITY_HEADERS=(
+    "ISAdapterConfig.h"
+    "ISBaseAdapter.h"
+)
 
-    # Check if already patched
-    if grep -q "NS_ASSUME_NONNULL_BEGIN" "$CONFIG_FILE" 2>/dev/null; then
-        echo "  Already patched, skipping"
-        continue
-    fi
+for HEADER_NAME in "${NULLABILITY_HEADERS[@]}"; do
+    find "$XCFRAMEWORK_PATH" -name "$HEADER_NAME" -path "*/Headers/*" | while read -r CONFIG_FILE; do
+        echo "Patching: $CONFIG_FILE"
 
-    # Add NS_ASSUME_NONNULL_BEGIN before @interface ISAdapterConfig : NSObject
-    perl -i -pe 's/^(\@interface ISAdapterConfig : NSObject)/NS_ASSUME_NONNULL_BEGIN\n\n$1/' "$CONFIG_FILE"
+        # Check if already patched
+        if grep -q "NS_ASSUME_NONNULL_BEGIN" "$CONFIG_FILE" 2>/dev/null; then
+            echo "  Already patched, skipping"
+            continue
+        fi
 
-    # Add NS_ASSUME_NONNULL_END after @end
-    perl -i -pe 's/^(\@end)\s*$/$1\n\nNS_ASSUME_NONNULL_END/' "$CONFIG_FILE"
+        # Slurp the whole file (-0777) so each substitution applies once: /m makes
+        # ^ and $ match at line boundaries, and omitting /g stops after the first
+        # hit for BEGIN and — with the leading greedy .* — the last one for END.
+        # Matching the bare @interface keyword rather than a specific class name
+        # keeps this working when a header declares its interface across several
+        # lines, as ISBaseAdapter.h does.
+        perl -0777 -i -pe 's/^(\@interface )/NS_ASSUME_NONNULL_BEGIN\n\n$1/m' "$CONFIG_FILE"
+        perl -0777 -i -pe 's/(.*)^(\@end)\s*$/$1$2\n\nNS_ASSUME_NONNULL_END/ms' "$CONFIG_FILE"
 
-    echo "  Done"
+        echo "  Done"
+    done
 done
 
 echo ""
