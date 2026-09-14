@@ -18,7 +18,7 @@ let package = Package(
             dependencies: ["IronSourceBinary"],
             resources: [.copy("Resources/PrivacyInfo.xcprivacy")],
             linkerSettings: [
-                .unsafeFlags(["-Xlinker", "-ObjC"]), // Required to support IronSource's use of Objective-C extensions on common types. `-Xlinker` because swiftc rejects a bare `-ObjC` as of Xcode 27.
+                .unsafeFlags(["-Xlinker", "-ObjC"]), // Required to support IronSource's use of Objective-C extensions on common types.
             ],
         ),
         .binaryTarget(
