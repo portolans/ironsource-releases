@@ -24,7 +24,7 @@ let package = Package(
         .binaryTarget(
             name: "IronSourceBinary",
             url: "https://github.com/portolans/ironsource-releases/releases/download/8.13.1/IronSource.xcframework.zip",
-            checksum: "b3be063881be408dd6d3942fabe8e42adf59c1f9fbedc9c9661a15c68d9a44c9",
+            checksum: "d0e8474aabc8fabdb6e0fcb9270d25c00b9570ea6b54eae151f7717a80b704d1",
         ),
     ],
 )
